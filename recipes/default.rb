@@ -10,7 +10,7 @@
 include_recipe "apt::default"
 apt_repository 'openjdk-8' do
   uri 'ppa:openjdk-r/ppa'
-  distribution node['lsb']['codename']
+  distribution node[:lsb][:codename]
 end
 
 # Install packages for building OTP locally
@@ -116,13 +116,34 @@ remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'los-angeles_ca
   action :create
 end
 
+# OTP Configuration files
+template ::File.join(node[:otp][:base_path], 'otp-config.json') do
+  source 'otp-config.json.erb'
+  owner node[:otp][:user]
+  group node[:otp][:group]
+  mode '0755'
+end
+
+template ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'build-config.json') do
+  source 'build-config.json.erb'
+  owner node[:otp][:user]
+  group node[:otp][:group]
+  mode '0755'
+end
+
+template ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'router-config.json') do
+  source 'router-config.json.erb'
+  owner node[:otp][:user]
+  group node[:otp][:group]
+  mode '0755'
+end
+
 # build graph and get Grizzly server running
 # java -Xmx2G -jar otp-0.20.0-SNAPSHOT-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp --preFlight
 #
-execute "Build graph and get Grizzly server running"
+execute "Build graph and get Grizzly server running" do
   group node[:otp][:group]
   user node[:otp][:user]
   cwd ::File.join(node[:otp][:local_repo_path], "target")
   command "java -Xmx2G -jar otp-0.20.0-SNAPSHOT-shaded.jar --build #{node[:otp][:base_path]}/graphs/lax --basePath #{node[:otp][:base_path]} --preFlight"
-  not_if { ::File.exists?("#{node[:otp][:local_repo_path]}/otp") }
 end

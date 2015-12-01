@@ -4,8 +4,8 @@ default[:otp][:git_repository] = "git@github.com:LACMTA/OpenTripPlanner.git"
 default[:otp][:git_revision] = "master"
 default[:otp][:git_key] = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAp1mLUJlwYj20QOwlyR2cK83LFDIovfHhcZQyI5Ib5jlXQ0Tk\nR2/Qjs2Ti1jgPNOTe6pVktVodpo97xSi1wjvl1xI0hEnWnHDXTaKj+inauWfXXVb\nQsyeSoit36wCe7mkXveYmc6EAuhKSQiyC0+aRpV1XIGdsjff4ivFCHVqPlThrpq0\nK4fc9eoT31L0XyGHC7cpWsq3OnaSfQT7ZhQGTP5tNidKc91cnSCC77ukSF5QUyUs\nWX2B4MrScIidku7Xk2SDS9eHm3iaB+azZVy/WzUvavndLcxQj/bFcWpb6HDIcXRR\nfc+oDPGfSi47s5mmWhzatTTsmz5BmPUDVKvYKQIDAQABAoIBAAwFnsB3hV9JV32i\neURtYB61dfVJdSvQCIYEQ2XSxTZQwDgQ5uVK3wyjMAo+pD06ZcnofqVBt3NtuS1H\nqjsQZUXWV1Tf7pfMvGAh3upfqEdBn6UzHQ87a9Om5fa/gJ4qw+gemVPTRiB/V3bP\nrRqq6UZQzlGK7i0zXl39DvaAmNVJXf5r+b6ob10QuaLkl6AmHyxd03doDia9hUUC\n852trtCwB2g6cPvHp2//+V6qGc45DuEWzIIOkKCslHNyrLgY2jsg/Qnnnef/H7RX\n8d5P4bKarSoRmL81SCo7fxUafDnISc6kQnvkJVPbrq0/c/Tu5oWMjQ6WBO4g21LK\n3nT+aJECgYEA00D9PRmXX1LcqNWpnaJVnawfYtKiU/wSIx/BBqlyc+bRvuhrQUHM\nW4Yo1c47OQybrXiINM8QVHVUn4f959rjwYgKch1RZL1jTndyX6RqURJ6Ftck0cNm\nesbhQ6X5Md6CfdO93tLwCrfR2JiuYS0KiBS8Xs7cHNY5N66Q7Yjv9rMCgYEAysvn\naCMA6TgJWy5MVBZP+OX0cMTd6tAi92IJ2Uwcprcl7uNGhNVgN7OZ28AW56CGi66W\nIzZNtg1vZSZcJ8G+1XJ9gscswMuKHC2Cj+EKyl6tn5sTv+YL0sRRP6Q02Aaj7ZVV\n0NZyzBhi2LIJP9xRKOd3ZcLxve0pEK1fA8Aow7MCgYEAnmO+uz3hyb3F5ex0xNS+\n3n379ks5HEEFlEItpoILZyzrm/iE2iOsRf77xPpgWvDCFDkn3nhVpQ1nikkbLOho\nFWWbd13V9fMtbtqN7XnHoMt6sH9UgtW/k1Rj9yWNBj/vlMnaNSPwiAi0lHI9ZGyx\n1b++UFNGo3RW6BHBZedjC5MCgYANzQqWf6tUM8gPOHthTZNrsNqNwhgIHtoCU92v\nuApLHjOqqjTmXU8K+2IBHnVwlfASGXOGOe/X79og3BdxbTH7fKsl90AIbtGbUU2N\nVRdS5laSgg86BAHR+iI9XoNqICmPxZXtfGqbkR1I+fS/L9MmIXpypm2lKzqcM/A/\nZRhhGQKBgH8//GkA++jFwCLaBJZAqT2b+8KUbLoVxMHz8PUuZrpDIR22RQhMYAas\nzTDl2ZLPClI49U05JTwbC+TKSiEQtOFnNvz5wRhldDmJPRwkGebi+rOkWayXWZ8x\nraCGqDYmabnzbHWKRDCi+rT9LyUo2Nwk8vQpUrhiBE53uxYvVk2w\n-----END RSA PRIVATE KEY-----\n"
 
-default[:otp][:base_path] = '/home/otp/'
+default[:otp][:base_path] = '/home/otp'
 
 default[:otp][:user] = "otp"
 default[:otp][:group] = "otp"
-override['maven']['version'] = '3.1.1'
+override[:maven][:version] = '3.1.1'

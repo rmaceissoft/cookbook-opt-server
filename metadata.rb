@@ -8,4 +8,3 @@ version          '0.1.0'
 
 
 depends 'apt', '~> 2.7.0'
-depends 'maven', '~> 2.1.0'

@@ -18,31 +18,12 @@ end
   package pkg
 end
 
-# Install maven via a cookbook
-include_recipe "maven::default"
-
 # Create User
 user node[:otp][:user] do
   home "/home/#{node[:otp][:user]}"
   supports :manage_home=>true
   shell "/bin/bash"
   system true
-end
-
-directory "/home/#{node[:otp][:user]}/.ssh/" do
-  owner node[:otp][:user]
-  group node[:otp][:group]
-  mode "0700"
-  action :create
-end
-
-# create a private key file
-file "/home/#{node[:otp][:user]}/.ssh/id_rsa" do
-  content node[:otp][:git_key]
-  owner node[:otp][:user]
-  group node[:otp][:group]
-  mode 00600
-  action [:delete, :create]
 end
 
 # Create OTP main folder
@@ -61,27 +42,14 @@ file "/home/#{node[:otp][:user]}/git_wrapper.sh" do
   content "#!/bin/sh\nexec /usr/bin/ssh -o \"StrictHostKeyChecking=no\" -i /home/#{node[:otp][:user]}/.ssh/id_rsa \"$@\""
 end
 
-# clone OTP source code from git repo
-git node[:otp][:local_repo_path] do
+remote_file ::File.join(node[:otp][:local_repo_path], 'otp-0.19.0-shaded.jar') do
+  source 'http://maven.conveyal.com.s3.amazonaws.com/org/opentripplanner/otp/0.19.0/otp-0.19.0-shaded.jar'
+  owner node[:otp][:user]
   group node[:otp][:group]
-  user node[:otp][:user]
-  repository node[:otp][:git_repository]
-  revision node[:otp][:git_revision]
-  ssh_wrapper "/home/#{node[:otp][:user]}/git_wrapper.sh"
-  action :sync
+  mode '0755'
+  action :create
 end
 
-# build JAR file from the OTP source code
-# TODO: maven command is returning the following error. fix it
-#
-execute "Start a build" do
-  group node[:otp][:group]
-  user node[:otp][:user]
-  cwd node[:otp][:local_repo_path]
-  environment ({"PATH" => "/usr/local/maven-3.1.1/bin:#{ENV['PATH']}"})
-  command "mvn clean package"
-  not_if { ::File.exists?("#{node[:otp][:local_repo_path]}/otp") }
-end
 
 directory ::File.join(node[:otp][:base_path], 'cache') do
   owner node[:otp][:user]
@@ -139,11 +107,11 @@ template ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'router-config.jso
 end
 
 # build graph and get Grizzly server running
-# java -Xmx2G -jar otp-0.20.0-SNAPSHOT-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp --preFlight
+# java -Xmx2G -jar otp-0.19.0-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp --preFlight
 #
-execute "Build graph and get Grizzly server running" do
-  group node[:otp][:group]
-  user node[:otp][:user]
-  cwd ::File.join(node[:otp][:local_repo_path], "target")
-  command "java -Xmx2G -jar otp-0.20.0-SNAPSHOT-shaded.jar --build #{node[:otp][:base_path]}/graphs/lax --basePath #{node[:otp][:base_path]} --preFlight"
-end
+# execute "Build graph and get Grizzly server running" do
+#   group node[:otp][:group]
+#   user node[:otp][:user]
+#   cwd node[:otp][:local_repo_path]
+#   command "java -Xmx2G -jar otp-0.19.0-shaded.jar --build #{node[:otp][:base_path]}/graphs/lax --basePath #{node[:otp][:base_path]} --preFlight"
+# end

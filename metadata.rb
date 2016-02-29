@@ -8,3 +8,4 @@ version          '0.1.0'
 
 
 depends 'apt', '~> 2.7.0'
+depends 'nginx', '~> 1.8.0'

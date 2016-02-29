@@ -115,3 +115,5 @@ end
 #   cwd node[:otp][:local_repo_path]
 #   command "java -Xmx2G -jar otp-0.19.0-shaded.jar --build #{node[:otp][:base_path]}/graphs/lax --basePath #{node[:otp][:base_path]} --preFlight"
 # end
+
+include_recipe "otp-server::nginx"

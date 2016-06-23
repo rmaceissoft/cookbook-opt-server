@@ -66,14 +66,18 @@ directory ::File.join(node[:otp][:base_path], 'graphs', 'lax') do
   recursive true
 end
 
-# download GTFS feed for Metro Los Angeles
-remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'gtfs.zip') do
-  source 'http://developer.metro.net/gtfs/google_transit.zip'
-  owner node[:otp][:user]
-  group node[:otp][:group]
-  mode '0755'
-  action :create
+
+# download GTFS feeds
+node[:otp][:gtfs_files].each do |key, value|
+  remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', '#{key}.zip') do
+    source value
+    owner node[:otp][:user]
+    group node[:otp][:group]
+    mode '0755'
+    action :create
+  end
 end
+
 
 # Download OpenStreetMap database
 remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'los-angeles_california.osm.pbf') do
@@ -107,7 +111,7 @@ template ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'router-config.jso
 end
 
 # build graph and get Grizzly server running
-# java -Xmx2G -jar otp-0.19.0-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp --preFlight
+# java -Xmx2G -jar otp-0.19.0-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp/ --inMemory --preFlight
 #
 # execute "Build graph and get Grizzly server running" do
 #   group node[:otp][:group]

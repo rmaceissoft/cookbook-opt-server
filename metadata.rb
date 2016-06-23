@@ -4,7 +4,7 @@ maintainer_email 'rmaceissoft@gmail.com'
 license          'All rights reserved'
 description      'Installs/Configures otp-server'
 long_description 'Installs/Configures otp-server'
-version          '0.1.0'
+version          '0.1.1'
 
 
 depends 'apt', '~> 2.7.0'

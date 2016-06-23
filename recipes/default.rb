@@ -10,7 +10,7 @@
 include_recipe "apt::default"
 apt_repository 'openjdk-8' do
   uri 'ppa:openjdk-r/ppa'
-  distribution node['lsb']['codename']
+  distribution node[:lsb][:codename]
 end
 
 # Install packages for building OTP locally
@@ -18,31 +18,12 @@ end
   package pkg
 end
 
-# Install maven via a cookbook
-include_recipe "maven::default"
-
 # Create User
 user node[:otp][:user] do
   home "/home/#{node[:otp][:user]}"
   supports :manage_home=>true
   shell "/bin/bash"
   system true
-end
-
-directory "/home/#{node[:otp][:user]}/.ssh/" do
-  owner node[:otp][:user]
-  group node[:otp][:group]
-  mode "0700"
-  action :create
-end
-
-# create a private key file
-file "/home/#{node[:otp][:user]}/.ssh/id_rsa" do
-  content node[:otp][:git_key]
-  owner node[:otp][:user]
-  group node[:otp][:group]
-  mode 00600
-  action [:delete, :create]
 end
 
 # Create OTP main folder
@@ -61,27 +42,14 @@ file "/home/#{node[:otp][:user]}/git_wrapper.sh" do
   content "#!/bin/sh\nexec /usr/bin/ssh -o \"StrictHostKeyChecking=no\" -i /home/#{node[:otp][:user]}/.ssh/id_rsa \"$@\""
 end
 
-# clone OTP source code from git repo
-git node[:otp][:local_repo_path] do
+remote_file ::File.join(node[:otp][:local_repo_path], 'otp-0.19.0-shaded.jar') do
+  source 'http://maven.conveyal.com.s3.amazonaws.com/org/opentripplanner/otp/0.19.0/otp-0.19.0-shaded.jar'
+  owner node[:otp][:user]
   group node[:otp][:group]
-  user node[:otp][:user]
-  repository node[:otp][:git_repository]
-  revision node[:otp][:git_revision]
-  ssh_wrapper "/home/#{node[:otp][:user]}/git_wrapper.sh"
-  action :sync
+  mode '0755'
+  action :create
 end
 
-# build JAR file from the OTP source code
-# TODO: maven command is returning the following error. fix it
-#
-execute "Start a build" do
-  group node[:otp][:group]
-  user node[:otp][:user]
-  cwd node[:otp][:local_repo_path]
-  environment ({"PATH" => "/usr/local/maven-3.1.1/bin:#{ENV['PATH']}"})
-  command "mvn clean package"
-  not_if { ::File.exists?("#{node[:otp][:local_repo_path]}/otp") }
-end
 
 directory ::File.join(node[:otp][:base_path], 'cache') do
   owner node[:otp][:user]
@@ -98,14 +66,18 @@ directory ::File.join(node[:otp][:base_path], 'graphs', 'lax') do
   recursive true
 end
 
-# download GTFS feed for Metro Los Angeles
-remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'gtfs.zip') do
-  source 'http://developer.metro.net/gtfs/google_transit.zip'
-  owner node[:otp][:user]
-  group node[:otp][:group]
-  mode '0755'
-  action :create
+
+# download GTFS feeds
+node[:otp][:gtfs_files].each do |key, value|
+  remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', key + '.zip') do
+    source value
+    owner node[:otp][:user]
+    group node[:otp][:group]
+    mode '0755'
+    action :create
+  end
 end
+
 
 # Download OpenStreetMap database
 remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'los-angeles_california.osm.pbf') do
@@ -116,13 +88,36 @@ remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'los-angeles_ca
   action :create
 end
 
-# build graph and get Grizzly server running
-# java -Xmx2G -jar otp-0.20.0-SNAPSHOT-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp --preFlight
-#
-execute "Build graph and get Grizzly server running"
+# OTP Configuration files
+template ::File.join(node[:otp][:base_path], 'otp-config.json') do
+  source 'otp-config.json.erb'
+  owner node[:otp][:user]
   group node[:otp][:group]
-  user node[:otp][:user]
-  cwd ::File.join(node[:otp][:local_repo_path], "target")
-  command "java -Xmx2G -jar otp-0.20.0-SNAPSHOT-shaded.jar --build #{node[:otp][:base_path]}/graphs/lax --basePath #{node[:otp][:base_path]} --preFlight"
-  not_if { ::File.exists?("#{node[:otp][:local_repo_path]}/otp") }
+  mode '0755'
 end
+
+template ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'build-config.json') do
+  source 'build-config.json.erb'
+  owner node[:otp][:user]
+  group node[:otp][:group]
+  mode '0755'
+end
+
+template ::File.join(node[:otp][:base_path], 'graphs', 'lax', 'router-config.json') do
+  source 'router-config.json.erb'
+  owner node[:otp][:user]
+  group node[:otp][:group]
+  mode '0755'
+end
+
+# build graph and get Grizzly server running
+# java -Xmx2G -jar otp-0.19.0-shaded.jar --build /home/otp/graphs/lax --basePath /home/otp/ --inMemory --preFlight
+#
+# execute "Build graph and get Grizzly server running" do
+#   group node[:otp][:group]
+#   user node[:otp][:user]
+#   cwd node[:otp][:local_repo_path]
+#   command "java -Xmx2G -jar otp-0.19.0-shaded.jar --build #{node[:otp][:base_path]}/graphs/lax --basePath #{node[:otp][:base_path]} --preFlight"
+# end
+
+include_recipe "otp-server::nginx"

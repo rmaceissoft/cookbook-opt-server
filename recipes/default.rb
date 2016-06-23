@@ -69,7 +69,7 @@ end
 
 # download GTFS feeds
 node[:otp][:gtfs_files].each do |key, value|
-  remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', '#{key}.zip') do
+  remote_file ::File.join(node[:otp][:base_path], 'graphs', 'lax', key + '.zip') do
     source value
     owner node[:otp][:user]
     group node[:otp][:group]
